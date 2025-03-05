@@ -1,12 +1,10 @@
 const mongoose = require("mongoose");
 
-// Define Schema
 const imprestSchema = new mongoose.Schema(
     {
         description: {
             type: String,
             required: true,
-            // trim: true,
         },
         amount: {
             type: String,
