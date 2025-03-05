@@ -15,9 +15,9 @@ const getImprest = async (req, res) => {
 // @route   POST /api/imprest
 const createImprest = async (req, res) => {
     try {
-        const { description, amount, department, urgencyLevel, refillAmount } = req.body;
+        const { description, amount, department, urgencyLevel, refillAmount,vendorName } = req.body;
 
-        if (!description || !amount || !department || !urgencyLevel) {
+        if (!description || !amount || !department || !urgencyLevel || !vendorName ) {
             return res.status(400).json({ message: "All required fields must be filled" });
         }
 
@@ -27,6 +27,7 @@ const createImprest = async (req, res) => {
             department,
             urgencyLevel,
             refillAmount,
+            vendorName,
         });
 
         await newImprest.save();
