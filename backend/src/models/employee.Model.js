@@ -24,6 +24,10 @@ const imprestSchema = new mongoose.Schema(
             type: String,
             required: false,
         },
+        vendorName:{
+            type: String,
+            required: true
+        }
     },
     {
         timestamps: true,
