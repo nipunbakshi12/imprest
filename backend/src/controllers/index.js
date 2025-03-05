@@ -44,16 +44,8 @@ const createImprest = async (req, res) => {
       vendorName,
     } = req.body;
 
-    if (
-      !description ||
-      !amount ||
-      !department ||
-      !urgencyLevel ||
-      !vendorName
-    ) {
-      return res
-        .status(400)
-        .json({ message: "All required fields must be filled" });
+    if (!description || !amount || !department || !urgencyLevel || !vendorName) {
+      return res.status(400).json({ message: "All required fields must be filled" });
     }
 
     const newImprest = new Imprest({
@@ -90,7 +82,7 @@ async function getManagerData(role, department) {
   }
 }
 
-const postManagerDepartment = async (req, res) => {};
+const postManagerDepartment = async (req, res) => { };
 
 module.exports = {
   getImprest,

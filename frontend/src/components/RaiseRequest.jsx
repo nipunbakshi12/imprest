@@ -1,5 +1,6 @@
 import axios from "axios";
 import React, { useState, useEffect } from "react";
+import toast from "react-hot-toast";
 
 const RaiseRequest = () => {
     const [description, setDescription] = useState("");
@@ -8,6 +9,8 @@ const RaiseRequest = () => {
     const [department, setDepartment] = useState("");
     const [requests, setRequests] = useState([]);
     const [departments, setDepartments] = useState(["HR", "Finance", "IT", "Operations"]); // Add your department names
+    const [vendorName, setVendorName] = useState("COGNITENSOR CORP")
+    const [imprestData, setImprestData] = useState([])
 
     const [isMultiLevel, setIsMultiLevel] = useState(false);
     const [multiLevelData, setMultiLevelData] = useState({
@@ -22,7 +25,7 @@ const RaiseRequest = () => {
         if (user?.role !== "Employee") {
             return;
         }
-        setDepartment(user.department || ""); // Default to the user's department
+        setDepartment("it"); // Default to the user's department
 
         const storedRequests = JSON.parse(localStorage.getItem("requests")) || [];
         setRequests(storedRequests.filter(req => req.department === user.department));
@@ -56,7 +59,7 @@ const RaiseRequest = () => {
         const multiLevelRequest = {
             description,
             amount,
-            department: user.department,
+            department: "IT",
             urgency,
             status: "Pending",
             ...multiLevelData // Store additional form data
@@ -74,49 +77,51 @@ const RaiseRequest = () => {
         alert("Multi-Level Request Submitted Successfully!");
     };
 
-    // const handleSubmit = (e) => {
-    //     e.preventDefault();
-
-    //     const user = JSON.parse(localStorage.getItem("user"));
-    //     if (!user || !user.department) {
-    //         alert("User department is missing. Please log in again.");
-    //         return;
-    //     }
-
-    //     const numericAmount = parseFloat(amount); // Convert amount to a number
-    //     if (isNaN(numericAmount) || numericAmount <= 0) {
-    //         alert("Please enter a valid positive amount.");
-    //         return;
-    //     }
-
-    //     const newRequest = {
-    //         description,
-    //         amount: numericAmount,  // Store as a number
-    //         department: user.department,
-    //         urgency,
-    //         status: "Pending"
-    //     };
-
-    //     const allRequests = JSON.parse(localStorage.getItem("requests")) || [];
-    //     allRequests.push(newRequest);
-    //     localStorage.setItem("requests", JSON.stringify(allRequests));
-
-    //     console.log("Updated Requests:", allRequests);
-
-    //     setRequests(allRequests.filter(req => req.department === user.department));
-    //     setDescription("");
-    //     setAmount(""); // Reset amount field
-
-    //     alert("Request Submitted Successfully!");
-    // };
-
     const handleSubmit = async (e) => {
         e.preventDefault();
+
+        const user = JSON.parse(localStorage.getItem("user"));
+        // if (!user || !user.department) {
+        //     alert("User department is missing. Please log in again.");
+        //     return;
+        // }
+
+        const numericAmount = parseFloat(amount); // Convert amount to a number
+        if (isNaN(numericAmount) || numericAmount <= 0) {
+            toast.error("Please enter a valid positive amount.");
+            return;
+        }
+
+        const createImprest = await axios.post("http://localhost:5000/api/imprest/createImprest", {
+            description,
+            amount: numericAmount,  // Store as a number
+            department: "it",
+            urgencyLevel: urgency,
+            status: "Pending",
+            vendorName
+        })
+
+        if (createImprest.status === 200 || createImprest.status === 201) {
+            toast.success("Imprest created successfully!");
+            await getImprestData();
+        } else {
+            toast.error("Failed to create imprest. Please try again.");
+        }
+
+    };
+
+
+    const getImprestData = async () => {
         const res = await axios.get("http://localhost:5000/api/imprest/getAllImprest")
-        console.log("Request Submitted", res);
+        console.log("Request Submitted", res.data);
+        const imprestData = res.data
+        setImprestData(imprestData)
     }
 
-    
+    useEffect(() => {
+        getImprestData()
+    }, [])
+
     return (
         <div className="p-6 max-w-2xl mx-auto text-black">
             <h2 className="text-2xl font-bold mb-4 text-center">Raise Request</h2>
@@ -165,18 +170,20 @@ const RaiseRequest = () => {
                         <th className="border p-2">Amount</th>
                         <th className="border p-2">Urgency</th>
                         <th className="border p-2">Status</th>
+                        <th className="border p-2">Vendor</th>
                     </tr>
                 </thead>
                 <tbody>
-                    {requests.map((req, index) => (
+                    {imprestData.map((req, index) => (
                         <tr key={index} className="text-center border">
                             <td className="border p-2">{req.department}</td>
                             <td className="border p-2">{req.description}</td>
                             <td className="border p-2">{req.amount}</td>
-                            <td className="border p-2">{req.urgency}</td>
+                            <td className="border p-2">{req.urgencyLevel}</td>
                             <td className={`border p-2 font-bold ${req.status === "Approved" ? "text-green-600" : req.status === "Rejected" ? "text-red-600" : ""}`}>
                                 {req.status}
                             </td>
+                            <td className="border p-2">{req.vendorName}</td>
                         </tr>
                     ))}
                 </tbody>

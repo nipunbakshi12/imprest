@@ -9,7 +9,7 @@ const imprestSchema = new mongoose.Schema(
             // trim: true,
         },
         amount: {
-            type: String,
+            type: Number,
             required: true,
         },
         department: {
@@ -24,7 +24,7 @@ const imprestSchema = new mongoose.Schema(
             type: String,
             required: false,
         },
-        vendorName:{
+        vendorName: {
             type: String,
             required: true
         }
